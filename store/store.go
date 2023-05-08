@@ -86,6 +86,7 @@ func (p *Store) Del(id string) {
 }
 
 func New() *Store {
+	
 	TokenStore = &Store{TokenMap: new(sync.Map), SecondsBeforeRefresh: 30 * 60}
 	return TokenStore
 }
