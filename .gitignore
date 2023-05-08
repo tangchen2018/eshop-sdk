@@ -14,7 +14,7 @@
 logs
 .idea
 .DS_Store
-cmd
+.cmd
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
