@@ -1,6 +1,9 @@
 package utils
 
-import "errors"
+import (
+	"errors"
+	"time"
+)
 
 func Err(e string) error {
 	return errors.New(e)
@@ -8,4 +11,8 @@ func Err(e string) error {
 
 func PString(e string) *string {
 	return &e
+}
+
+func TimestampSecond() int64 {
+	return time.Now().UnixMilli() / 1000
 }

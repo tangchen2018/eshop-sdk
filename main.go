@@ -1,6 +1,1 @@
 package main
-
-func main() {
-
-	//
-}

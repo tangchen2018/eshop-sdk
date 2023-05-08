@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/tangchen2018/eshop-sdk/model"
 	"github.com/tangchen2018/eshop-sdk/utils"
@@ -25,8 +26,8 @@ func NewClient(setting *model.Setting) *Client {
 
 func (p *Client) Execute() {
 
-	if p.Request.Method == nil {
-		p.SetMethod("GET")
+	if p.Request.Method == nil || len(*p.Request.Method) < 0 {
+		p.Request.Method = utils.PString(http.GET)
 	}
 	if p.Request.Params == nil {
 		p.SetParams(make(model.BodyMap))
@@ -40,44 +41,59 @@ func (p *Client) Execute() {
 		return
 	}
 
-	p.Request.Params.Set("app_key", *p.Setting.Key).
-		Set("timestamp", fmt.Sprintf("%d", time.Now().Unix()))
+	p.Request.Params.Set("timestamp", fmt.Sprintf("%d", time.Now().Unix())).
+		Set("app_key", *p.Setting.Key)
 
-	if p.Setting.AccessToken != nil {
+	if p.Setting.AccessToken != nil && *p.Client.Request.Path != GETACCESS && *p.Client.Request.Path != REFRESHTOKEN {
 		p.Request.Params.Set("access_token", *p.Setting.AccessToken)
 	}
-	if p.Setting.ShopId != nil {
+
+	if p.Setting.ShopId != nil && *p.Client.Request.Path != GETACCESS && *p.Client.Request.Path != REFRESHTOKEN {
 		p.Request.Params.Set("shop_id", *p.Setting.ShopId)
 	}
+
+	//if *p.Request.Path == REFRESHTOKEN {
+	//	p.Request.Params.Set("secret", *p.Setting.Secret)
+	//}
 
 	if *p.Request.Path != GETACCESS {
 		p.Request.Params.Set("sign", p.sign())
 	}
 
-	p.Client.Request.Req = &http.HttpRequest{
-		Method: *p.Request.Method,
-		Url:    p.urlParse(),
-	}
+	p.Request.Req = http.New(
+		http.WithUrl(p.urlParse()),
+		http.WithMethod(*p.Request.Method),
+	)
 
 	for key, value := range p.Request.Params {
-		p.Client.Request.Req.SetParams(key, value.(string))
+		p.Request.Req.QueryParams.Set(key, value.(string))
 	}
-
-	p.Client.Request.Req.SetHeader("Content-Type", "application/json")
 
 	if strings.ToUpper(*p.Request.Method) == http2.MethodPost ||
 		strings.ToUpper(*p.Request.Method) == http2.MethodPut {
-		p.Client.Request.Req.SetBody([]byte(p.Request.Body.JsonBody()))
+
+		http.WithRequestType(http.TypeJSON)(p.Request.Req)
+		p.Request.Req.Body = p.Request.Body
+		//p.Client.Request.Req.SetBody([]byte(p.Request.Body.JsonBody()))
 	}
+
+	//p.Response.Success = false
+	//
+	//result := new(Response)
+	//reponse, err := p.Request.Req.EndStruct(context.Background(), result)
+	//if err != nil {
+	//	p.Err = err
+	//	return
+	//} else {
+	//	p.Response.Status = reponse.StatusCode
+	//}
 
 	if p.Err = p.Client.Execute(); p.Err != nil {
 		return
 	}
 
 	result := new(Response)
-	if p.Err = p.Client.Request.Req.To(result); p.Err != nil {
-		return
-	}
+	_ = json.Unmarshal(p.Request.Req.Result, &result)
 
 	p.Response.Response.Code = fmt.Sprintf("%d", result.Code)
 	p.Response.Response.Message = result.Message
@@ -86,6 +102,9 @@ func (p *Client) Execute() {
 
 	if result.Code == 0 {
 		p.Response.Success = true
+	}
+	if p.Response.Status != 200 {
+		p.Response.Success = false
 	}
 }
 

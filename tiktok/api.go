@@ -30,29 +30,67 @@ func (p *Api) GetAuthUrl(callbackParams string) string {
 	Response: GetTokenResponse
 */
 
-func (p *Api) GetToken(Body model.BodyMap) *Client {
+func (p *Api) GetToken(Body model.BodyMap) *model.Client {
 
 	Body.Set("grant_type", "authorized_code")
 
 	c := NewClient(p.Setting)
 	c.SetPath(GETACCESS).
-		SetMethod("POST").
-		SetBody(Body)
+		SetParams(Body)
 
 	if c.Err = Body.CheckEmptyError("auth_code"); c.Err != nil {
-		return c
+		return &c.Client
 	}
 
 	c.Execute()
 	if c.Err != nil {
-		return c
+		return &c.Client
 	}
 	response := GetTokenResponse{}
 	if err := c.Client.Response.To(&response); err != nil {
-		return c
+		return &c.Client
 	}
 	c.Response.Response.DataTo = response
-	return c
+	return &c.Client
+}
+
+/*
+	刷新令牌
+	Url : https://bytedance.feishu.cn/docs/doccnROmkE6WI9zFeJuT3DQ3YOg
+	Response: GetTokenResponse
+*/
+
+func (p *Api) RefreshToken(Body model.BodyMap) *model.Client {
+
+	c := NewClient(p.Setting)
+	c.SetPath(REFRESHTOKEN).
+		SetParams(Body)
+
+	if c.Err = Body.CheckEmptyError("refresh_token"); c.Err != nil {
+		return &c.Client
+	}
+
+	c.Request.Params.Set("grant_type", "refresh_token").
+		Set("app_secret", *p.Setting.Secret)
+
+	c.Execute()
+	if c.Err != nil {
+		return &c.Client
+	}
+	response := GetTokenResponse{}
+	if err := c.Client.Response.To(&response); err != nil {
+		return &c.Client
+	}
+
+	response1 := model.Token{
+		AccessToken:        response.AccessToken,
+		RefreshToken:       response.RefreshToken,
+		AccessTokenExpire:  response.AccessTokenExpireIn,
+		RefreshTokenExpire: response.RefreshTokenExpireIn,
+		PlatformCode:       model.PFC_TIKTOK,
+	}
+	c.Response.Response.DataTo = response1
+	return &c.Client
 }
 
 /*
@@ -61,7 +99,7 @@ func (p *Api) GetToken(Body model.BodyMap) *Client {
 	Response: GetOrderListResponse
 */
 
-func (p *Api) GetOrderList(Body model.BodyMap) *Client {
+func (p *Api) GetOrderList(Body model.BodyMap) *model.Client {
 
 	var cursor *string
 	c := NewClient(p.Setting)
@@ -70,7 +108,7 @@ func (p *Api) GetOrderList(Body model.BodyMap) *Client {
 		SetBody(Body)
 
 	if c.Err = Body.CheckEmptyError("page_size"); c.Err != nil {
-		return c
+		return &c.Client
 	}
 
 	result := GetOrderListResponse{}
@@ -84,12 +122,16 @@ func (p *Api) GetOrderList(Body model.BodyMap) *Client {
 		cResult := getOrderListResponse{}
 
 		c.Execute()
+		if c.Err != nil {
+			return &c.Client
+		}
+
 		if c.Err = c.Client.Response.To(&cResult); c.Err != nil {
-			return c
+			return &c.Client
 		}
 
 		if cResult.OrderList != nil && len(cResult.OrderList) > 0 {
-			for index, _ := range cResult.OrderList {
+			for index := range cResult.OrderList {
 				result.List = append(result.List, cResult.OrderList[index])
 			}
 		}
@@ -104,7 +146,7 @@ func (p *Api) GetOrderList(Body model.BodyMap) *Client {
 
 	c.Response.Response.DataTo = result
 
-	return c
+	return &c.Client
 }
 
 /*
@@ -113,7 +155,7 @@ func (p *Api) GetOrderList(Body model.BodyMap) *Client {
 	Response: GetOrderDetailResponse
 */
 
-func (p *Api) GetOrderDetail(Body model.BodyMap) *Client {
+func (p *Api) GetOrderDetail(Body model.BodyMap) *model.Client {
 
 	c := NewClient(p.Setting)
 	c.SetPath(`/api/orders/detail/query`).
@@ -121,15 +163,18 @@ func (p *Api) GetOrderDetail(Body model.BodyMap) *Client {
 		SetBody(Body)
 
 	if c.Err = Body.CheckEmptyError("order_id_list"); c.Err != nil {
-		return c
+		return &c.Client
 	}
 
 	c.Execute()
+	if c.Err != nil {
+		return &c.Client
+	}
 
 	response := GetOrderDetailResponse{}
 	if err := c.Client.Response.To(&response); err != nil {
-		return c
+		return &c.Client
 	}
 	c.Response.Response.DataTo = response
-	return c
+	return &c.Client
 }
