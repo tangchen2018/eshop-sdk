@@ -81,15 +81,7 @@ func (p *Api) RefreshToken(Body model.BodyMap) *model.Client {
 	if err := c.Client.Response.To(&response); err != nil {
 		return &c.Client
 	}
-
-	response1 := model.Token{
-		AccessToken:        response.AccessToken,
-		RefreshToken:       response.RefreshToken,
-		AccessTokenExpire:  response.AccessTokenExpireIn,
-		RefreshTokenExpire: response.RefreshTokenExpireIn,
-		PlatformCode:       model.PFC_TIKTOK,
-	}
-	c.Response.Response.DataTo = response1
+	c.Response.Response.DataTo = response
 	return &c.Client
 }
 

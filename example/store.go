@@ -1,31 +1,32 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/tangchen2018/eshop-sdk/model"
 	"github.com/tangchen2018/eshop-sdk/store"
 	"log"
 )
 
 func main() {
-	req := store.New()
+	s1 := store.New()
+	s1.Listen()
 
-	req.CallBack = func(e *store.Event) {
-		log.Println(string(e.ResponseData))
-		log.Println(e.Token, e.Success, e.Msg)
-	}
-
-	if _, err := req.Save(&store.Request{
-		Key:                "",
-		Secret:             "",
-		PlatformCode:       model.PFC_TIKTOK,
-		ShopId:             "",
-		RefreshToken:       "",
-		AccessToken:        "",
-		AccessTokenExpire:  1684157615,
-		RefreshTokenExpire: 1715053597,
+	if err := s1.AddJob(&store.Token{
+		Id: "",
+		CallBack: func(e *store.Event) {
+			tmp, _ := json.Marshal(&e.Token)
+			log.Println(e.Success, e.Msg, string(tmp))
+		},
+		Refresh: store.Refresh{
+			Key:               "",
+			Secret:            "",
+			PlatformCode:      model.PFC_TIKTOK,
+			RefreshToken:      "",
+			AccessTokenExpire: 1684159792,
+		},
 	}); err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 
-	req.Listen()
+	<-make(chan bool)
 }
