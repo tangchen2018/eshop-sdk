@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/tangchen2018/eshop-sdk/model"
-	"github.com/tangchen2018/eshop-sdk/tiktok"
+	"github.com/tangchen2018/eshop-sdk/pfc/tiktok"
 )
 
 type Api interface {

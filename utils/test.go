@@ -16,3 +16,7 @@ func PString(e string) *string {
 func TimestampSecond() int64 {
 	return time.Now().UnixMilli() / 1000
 }
+
+func IsEmpty(val string) bool {
+	return val == ""
+}

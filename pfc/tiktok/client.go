@@ -52,48 +52,31 @@ func (p *Client) Execute() {
 		p.Request.Params.Set("shop_id", *p.Setting.ShopId)
 	}
 
-	//if *p.Request.Path == REFRESHTOKEN {
-	//	p.Request.Params.Set("secret", *p.Setting.Secret)
-	//}
-
 	if *p.Request.Path != GETACCESS {
 		p.Request.Params.Set("sign", p.sign())
 	}
 
-	p.Request.Req = http.New(
+	p.HttpReq = http.New(
 		http.WithUrl(p.urlParse()),
 		http.WithMethod(*p.Request.Method),
 	)
 
 	for key, value := range p.Request.Params {
-		p.Request.Req.QueryParams.Set(key, value.(string))
+		p.HttpReq.QueryParams.Set(key, value.(string))
 	}
 
 	if strings.ToUpper(*p.Request.Method) == http2.MethodPost ||
 		strings.ToUpper(*p.Request.Method) == http2.MethodPut {
-
-		http.WithRequestType(http.TypeJSON)(p.Request.Req)
-		p.Request.Req.Body = p.Request.Body
-		//p.Client.Request.Req.SetBody([]byte(p.Request.Body.JsonBody()))
+		http.WithRequestType(http.TypeJSON)(p.HttpReq)
+		p.HttpReq.Body = p.Request.Body
 	}
-
-	//p.Response.Success = false
-	//
-	//result := new(Response)
-	//reponse, err := p.Request.Req.EndStruct(context.Background(), result)
-	//if err != nil {
-	//	p.Err = err
-	//	return
-	//} else {
-	//	p.Response.Status = reponse.StatusCode
-	//}
 
 	if p.Err = p.Client.Execute(); p.Err != nil {
 		return
 	}
 
 	result := new(Response)
-	_ = json.Unmarshal(p.Request.Req.Result, &result)
+	_ = json.Unmarshal(p.HttpReq.Result, &result)
 
 	p.Response.Response.Code = fmt.Sprintf("%d", result.Code)
 	p.Response.Response.Message = result.Message
@@ -103,7 +86,8 @@ func (p *Client) Execute() {
 	if result.Code == 0 {
 		p.Response.Success = true
 	}
-	if p.Response.Status != 200 {
+
+	if p.Response.HttpStatus != 200 {
 		p.Response.Success = false
 	}
 }

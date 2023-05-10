@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/tangchen2018/eshop-sdk/model"
-	"github.com/tangchen2018/eshop-sdk/tiktok"
+	tiktok2 "github.com/tangchen2018/eshop-sdk/pfc/tiktok"
 	"github.com/tangchen2018/eshop-sdk/utils"
 	"log"
 	"reflect"
@@ -120,7 +120,7 @@ func (p *Store) RefreshRun(e *Event) {
 	var c *model.Client
 
 	if e.Token.Refresh.PlatformCode == model.PFC_TIKTOK {
-		api := tiktok.New(new(model.Setting).
+		api := tiktok2.New(new(model.Setting).
 			SetKey(e.Token.Refresh.Key).
 			SetSecret(e.Token.Refresh.Secret))
 
@@ -141,7 +141,7 @@ func (p *Store) RefreshRun(e *Event) {
 	}
 
 	if e.Token.Refresh.PlatformCode == model.PFC_TIKTOK {
-		resp := c.Response.Response.DataTo.(tiktok.GetTokenResponse)
+		resp := c.Response.Response.DataTo.(tiktok2.GetTokenResponse)
 		e.Token.Refresh.AccessToken = resp.AccessToken
 		e.Token.Refresh.AccessTokenExpire = resp.AccessTokenExpireIn
 		e.Token.Refresh.RefreshToken = resp.RefreshToken

@@ -1,16 +1,32 @@
 package model
 
 type Setting struct {
-	Key         *string // Key
-	Secret      *string // 密钥
-	ShopId      *string // 店铺ID
-	RetryCount  *int    // 重试次数
-	AccessToken *string // 刷新令牌
+	Key             *string // Key
+	Secret          *string // 密钥
+	ShopId          *string // 店铺ID
+	RetryCount      *int    // 重试次数
+	AccessToken     *string // 刷新令牌
+	ServerUrl       *string // 服务链接
+	AuthCallbackUrl *string // 授权回调地址
+}
+
+func (c *Setting) SetAuthCallbackUrl(data string) *Setting {
+	if len(data) > 0 {
+		c.AuthCallbackUrl = &data
+	}
+	return c
 }
 
 func (c *Setting) SetAccessToken(data string) *Setting {
 	if len(data) > 0 {
 		c.AccessToken = &data
+	}
+	return c
+}
+
+func (c *Setting) SetServerUrl(data string) *Setting {
+	if len(data) > 0 {
+		c.ServerUrl = &data
 	}
 	return c
 }

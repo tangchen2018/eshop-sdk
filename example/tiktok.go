@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 	"github.com/tangchen2018/eshop-sdk/model"
-	"github.com/tangchen2018/eshop-sdk/tiktok"
+	tiktok2 "github.com/tangchen2018/eshop-sdk/pfc/tiktok"
 )
 
 func main() {
-	api := tiktok.New(
+	api := tiktok2.New(
 		new(model.Setting).
 			SetShopId("").
 			SetKey("").
@@ -17,7 +17,7 @@ func main() {
 	GetOrderDetail(api)
 }
 
-func GetOrderDetail(api *tiktok.Api) {
+func GetOrderDetail(api *tiktok2.Api) {
 	/* 获取订单明细 */
 	bm := model.BodyMap{}.
 		Set("order_id_list", []string{"576604241027239433"})
@@ -25,6 +25,6 @@ func GetOrderDetail(api *tiktok.Api) {
 	if c.Err != nil {
 		panic(c.Err)
 	}
-	result := c.GetResponseTo().(tiktok.GetOrderDetailResponse)
+	result := c.GetResponseTo().(tiktok2.GetOrderDetailResponse)
 	fmt.Println(result)
 }

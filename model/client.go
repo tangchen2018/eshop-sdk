@@ -6,14 +6,14 @@ import (
 )
 
 type Response struct {
-	Success  bool `json:"success"`    // 是否成功
-	Status   int  `json:"httpStatus"` // http状态码
-	Response struct {
-		RequestId string          `json:"requestId"` // 请求ID
-		Code      string          `json:"code"`      // 平台code信息
-		Message   string          `json:"message"`   // 平台msg信息
-		Data      json.RawMessage `json:"data"`      // 数据
-		DataTo    interface{}     `json:"dataTo"`    // 结构转化后的数据
+	Success    bool // 是否成功
+	HttpStatus int  // http状态码
+	Response   struct {
+		RequestId string          // 请求ID
+		Code      string          // 平台code信息
+		Message   string          // 平台msg信息
+		Data      json.RawMessage // 数据
+		DataTo    interface{}     // 结构转化后的数据
 	}
 }
 
@@ -32,7 +32,6 @@ type Request struct {
 	Method *string
 	Params BodyMap
 	Body   BodyMap
-	Req    *http.Request
 }
 
 type Client struct {
@@ -40,16 +39,17 @@ type Client struct {
 	Response Response
 	Setting  *Setting
 	Err      error
+	HttpReq  *http.Request
 }
 
 func (p *Client) Execute() error {
 
 	p.Response.Success = false
 
-	if err := p.Request.Req.Do(); err != nil {
+	if err := p.HttpReq.Do(); err != nil {
 		return err
 	} else {
-		p.Response.Status = p.Request.Req.Response.StatusCode
+		p.Response.HttpStatus = p.HttpReq.Response.StatusCode
 	}
 
 	return nil
