@@ -45,7 +45,7 @@ func (p *Api) GetToken(Body model.BodyMap) *model.Client {
 		return &c.Client
 	}
 	response := GetTokenResponse{}
-	if err := c.Client.Response.To(&response); err != nil {
+	if c.Err = c.Client.Response.To(&response); c.Err != nil {
 		return &c.Client
 	}
 	c.Response.Response.DataTo = response
@@ -70,7 +70,7 @@ func (p *Api) RefreshToken(Body model.BodyMap) *model.Client {
 		return &c.Client
 	}
 	response := GetTokenResponse{}
-	if err := c.Client.Response.To(&response); err != nil {
+	if c.Err = c.Client.Response.To(&response); c.Err != nil {
 		return &c.Client
 	}
 	c.Response.Response.DataTo = response
@@ -99,7 +99,7 @@ func (p *Api) PayApply(Body model.BodyMap) *model.Client {
 	return &c.Client
 }
 
-func (p *Api) GetMerchant(Body model.BodyMap) *model.Client {
+func (p *Api) GetSeller(Body model.BodyMap) *model.Client {
 
 	c := NewClient(p.Setting)
 	c.SetPath(MERCHANT_INFO).
@@ -109,10 +109,10 @@ func (p *Api) GetMerchant(Body model.BodyMap) *model.Client {
 	if c.Err != nil {
 		return &c.Client
 	}
-	//response := GetTokenResponse{}
-	//if err := c.Client.Response.To(&response); err != nil {
-	//	return &c.Client
-	//}
-	//c.Response.Response.DataTo = response
+	response := GetSellerResponse{}
+	if c.Err = c.Client.Response.To(&response); c.Err != nil {
+		return &c.Client
+	}
+	c.Response.Response.DataTo = response
 	return &c.Client
 }

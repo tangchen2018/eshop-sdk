@@ -13,6 +13,7 @@ type Response struct {
 		Code      string          // 平台code信息
 		Message   string          // 平台msg信息
 		Data      json.RawMessage // 数据
+		Result    json.RawMessage // Lazada业务数据
 		DataTo    interface{}     // 结构转化后的数据
 	}
 }

@@ -8,6 +8,14 @@ type Setting struct {
 	AccessToken     *string // 刷新令牌
 	ServerUrl       *string // 服务链接
 	AuthCallbackUrl *string // 授权回调地址
+	SiteNo          *string // 站点(目前Lazada切换访问域名用的)
+}
+
+func (c *Setting) SetSiteNo(data string) *Setting {
+	if len(data) > 0 {
+		c.SiteNo = &data
+	}
+	return c
 }
 
 func (c *Setting) SetAuthCallbackUrl(data string) *Setting {
