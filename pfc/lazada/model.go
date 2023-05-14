@@ -40,21 +40,12 @@ const (
 )
 
 type Response struct {
-	Code             string                     `json:"code"`
-	Type             string                     `json:"type"`
-	Message          string                     `json:"message"`
-	RequestID        string                     `json:"request_id"`
-	Data             json.RawMessage            `json:"data"`
-	Result           json.RawMessage            `json:"result"`
-	ExpiresIn        int64                      `json:"expires_in"`
-	AccountId        string                     `json:"account_id"`
-	Country          string                     `json:"country"`
-	CountryUserInfo  []*ResponseConutryUserInfo `json:"country_user_info"`
-	AccountPlatform  string                     `json:"account_platform"`
-	AccessToken      string                     `json:"access_token"`
-	Account          string                     `json:"account"`
-	RefreshExpiresIn int64                      `json:"refresh_expires_in"`
-	RefreshToken     string                     `json:"refresh_token"`
+	Code      string          `json:"code"`
+	Type      string          `json:"type"`
+	Message   string          `json:"message"`
+	RequestID string          `json:"request_id"`
+	Data      json.RawMessage `json:"data"`
+	Result    json.RawMessage `json:"result"`
 }
 
 type ResponseConutryUserInfo struct {

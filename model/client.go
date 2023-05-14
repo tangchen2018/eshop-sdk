@@ -25,7 +25,10 @@ func (p *Response) ToMap() BodyMap {
 }
 
 func (p *Response) To(row interface{}) error {
-	return json.Unmarshal(p.Response.Data, row)
+	if p.Response.Data != nil {
+		return json.Unmarshal(p.Response.Data, row)
+	}
+	return nil
 }
 
 type Request struct {

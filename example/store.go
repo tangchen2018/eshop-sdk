@@ -1,28 +1,28 @@
 package main
 
 import (
-	"encoding/json"
 	"github.com/tangchen2018/eshop-sdk/model"
 	"github.com/tangchen2018/eshop-sdk/store"
+	"github.com/tangchen2018/eshop-sdk/utils"
 	"log"
 )
 
 func main() {
 	s1 := store.New()
+	s1.LoopWait = 3
 	s1.Listen()
 
 	if err := s1.AddJob(&store.Token{
-		Id: "",
+		Id: "=",
 		CallBack: func(e *store.Event) {
-			tmp, _ := json.Marshal(&e.Token)
-			log.Println(e.Success, e.Msg, string(tmp))
+			log.Println(e.Success, e.Msg, utils.ToJson(e.Token))
 		},
 		Refresh: store.Refresh{
-			Key:               "",
-			Secret:            "",
-			PlatformCode:      model.PFC_TIKTOK,
+			Key:               "appxxxxxxxxxxxxxxxx",
+			Secret:            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+			PlatformCode:      model.PFC_EPUR,
 			RefreshToken:      "",
-			AccessTokenExpire: 1684159792,
+			AccessTokenExpire: 1684066892,
 		},
 	}); err != nil {
 		panic(err.Error())

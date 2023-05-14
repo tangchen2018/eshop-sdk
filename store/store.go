@@ -3,8 +3,8 @@ package store
 import (
 	"errors"
 	"fmt"
+	"github.com/tangchen2018/eshop-sdk/api"
 	"github.com/tangchen2018/eshop-sdk/model"
-	tiktok2 "github.com/tangchen2018/eshop-sdk/pfc/tiktok"
 	"github.com/tangchen2018/eshop-sdk/utils"
 	"log"
 	"reflect"
@@ -109,23 +109,25 @@ func (p *Store) Listen() {
 
 func (p *Store) RefreshRun(e *Event) {
 	defer func() {
-		err := recover()
-		if err != nil {
-			e1 := reflect.ValueOf(err)
+
+		if r := recover(); r != nil {
+			const size = 64 << 10
+			buf := make([]byte, size)
+			buf = buf[:runtime.Stack(buf, false)]
+			err, ok := r.(error)
+			if !ok {
+				err = fmt.Errorf("%v", r)
+			}
+			log.Println(err, "panic", "stack", "...\n"+string(buf))
+
 			e.Success = false
-			e.Msg = e1.String()
+			e.Msg = reflect.ValueOf(err).String()
 		}
 	}()
 
-	var c *model.Client
-
-	if e.Token.Refresh.PlatformCode == model.PFC_TIKTOK {
-		api := tiktok2.New(new(model.Setting).
-			SetKey(e.Token.Refresh.Key).
-			SetSecret(e.Token.Refresh.Secret))
-
-		c = api.RefreshToken(model.BodyMap{"refresh_token": e.Token.Refresh.RefreshToken})
-	}
+	c := api.New(e.Token.Refresh.PlatformCode, new(model.Setting).
+		SetKey(e.Token.Refresh.Key).
+		SetSecret(e.Token.Refresh.Secret)).StoreRefreshToken(model.BodyMap{"refresh_token": e.Token.Refresh.RefreshToken})
 
 	if c == nil {
 		e.Msg = fmt.Sprintf("平台[%s]不支持", e.Token.Refresh.PlatformCode)
@@ -140,13 +142,11 @@ func (p *Store) RefreshRun(e *Event) {
 		return
 	}
 
-	if e.Token.Refresh.PlatformCode == model.PFC_TIKTOK {
-		resp := c.Response.Response.DataTo.(tiktok2.GetTokenResponse)
-		e.Token.Refresh.AccessToken = resp.AccessToken
-		e.Token.Refresh.AccessTokenExpire = resp.AccessTokenExpireIn
-		e.Token.Refresh.RefreshToken = resp.RefreshToken
-		e.Token.Refresh.RefreshTokenExpire = resp.RefreshTokenExpireIn
-	}
+	resp := c.Response.Response.DataTo.(model.StoreTokenResponse)
+	e.Token.Refresh.AccessToken = resp.AccessToken
+	e.Token.Refresh.AccessTokenExpire = resp.AccessTokenExpire
+	e.Token.Refresh.RefreshToken = resp.RefreshToken
+	e.Token.Refresh.RefreshTokenExpire = resp.RefreshTokenExpire
 
 	e.Success = true
 	e.Msg = "success"

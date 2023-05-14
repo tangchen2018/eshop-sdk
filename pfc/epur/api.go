@@ -3,6 +3,7 @@ package epur
 import (
 	"fmt"
 	"github.com/tangchen2018/eshop-sdk/model"
+	"github.com/tangchen2018/eshop-sdk/utils"
 )
 
 type Api struct {
@@ -10,7 +11,11 @@ type Api struct {
 }
 
 func New(setting *model.Setting) *Api {
-	return &Api{Setting: setting}
+	api := &Api{Setting: setting}
+	if api.Setting.ServerUrl == nil {
+		api.Setting.SetServerUrl("http://dev.open.epur.cn")
+	}
+	return api
 }
 
 func (p *Api) GetAuthUrl(callbackParams string) string {
@@ -75,6 +80,25 @@ func (p *Api) RefreshToken(Body model.BodyMap) *model.Client {
 	}
 	c.Response.Response.DataTo = response
 	return &c.Client
+}
+
+func (p *Api) StoreRefreshToken(Body model.BodyMap) *model.Client {
+
+	currTime := utils.TimestampSecond()
+
+	c := p.RefreshToken(Body.Set("refreshToken", Body.Get("refresh_token")))
+
+	if c.Response.Response.DataTo != nil {
+		response := c.Response.Response.DataTo.(GetTokenResponse)
+		c.Response.Response.DataTo = model.StoreTokenResponse{
+			AccessToken:        response.AccessToken,
+			AccessTokenExpire:  response.ExpiresIn + currTime,
+			RefreshToken:       response.RefreshToken,
+			RefreshTokenExpire: response.RefreshExpiresIn + currTime,
+		}
+	}
+
+	return c
 }
 
 func (p *Api) PayApply(Body model.BodyMap) *model.Client {

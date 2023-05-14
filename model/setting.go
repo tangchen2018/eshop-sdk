@@ -9,6 +9,14 @@ type Setting struct {
 	ServerUrl       *string // 服务链接
 	AuthCallbackUrl *string // 授权回调地址
 	SiteNo          *string // 站点(目前Lazada切换访问域名用的)
+	MerchantId      *string // 商户
+}
+
+func (c *Setting) SetMerchantId(data string) *Setting {
+	if len(data) > 0 {
+		c.MerchantId = &data
+	}
+	return c
 }
 
 func (c *Setting) SetSiteNo(data string) *Setting {

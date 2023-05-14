@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"errors"
 	"time"
 )
@@ -19,4 +20,9 @@ func TimestampSecond() int64 {
 
 func IsEmpty(val string) bool {
 	return val == ""
+}
+
+func ToJson(data interface{}) string {
+	e, _ := json.Marshal(data)
+	return string(e)
 }

@@ -5,38 +5,53 @@ import (
 	"fmt"
 	"github.com/tangchen2018/eshop-sdk/model"
 	"github.com/tangchen2018/eshop-sdk/pfc/lazada"
+	"github.com/tangchen2018/eshop-sdk/utils"
 )
+
+type LazadaTest struct {
+	api *lazada.Api
+}
 
 func main() {
 	api := lazada.New(
 		new(model.Setting).
-			SetKey("115018").
-			SetSecret("4XYbxMIC5wMMHVz5bLvM6siY2GKMDIYk").
-			SetAuthCallbackUrl("https://dev.api.epur1688.cn/admin/v1/erp/platform/cross/auth/callback/Lazada").
-			SetAccessToken(`50000001501ba1b638f2eQwdjQe0qGWCex7rUVCGlJG0eQ1kh3AqTBMvXbzFfbUr`),
+			SetKey("").
+			SetSecret("").
+			SetAuthCallbackUrl("").
+			SetAccessToken(``),
 	)
-	GetOrderDetail(api)
+	testApi := LazadaTest{api: api}
+	testApi.GetOrderDetail()
 }
 
-func GetAuthUrl(api *lazada.Api) {
-	result := api.GetAuthUrl("123")
+func (p *LazadaTest) GetAuthUrl() {
+	result := p.api.GetAuthUrl("123")
 	fmt.Println(result)
 }
 
-func GetToken(api *lazada.Api) {
-	c := api.GetToken(model.BodyMap{"code": "0_115018_97qwKzDdqQfKuD0tYArR3llr2652"})
+func (p *LazadaTest) GetToken() {
+	c := p.api.GetToken(model.BodyMap{"code": ""})
 	if c.Err != nil {
 		panic(c.Err)
 	}
-	result := c.GetResponseTo().(lazada.Response)
-	fmt.Println(result)
+	result := c.GetResponseTo().(lazada.GetTokenResponse)
+	fmt.Println(utils.ToJson(result))
 }
 
-func GetSeller(api *lazada.Api) {
+func (p *LazadaTest) RefreshToken() {
+	c := p.api.RefreshToken(model.BodyMap{"refresh_token": ""})
+	if c.Err != nil {
+		panic(c.Err)
+	}
+	result := c.GetResponseTo().(lazada.GetTokenResponse)
+	fmt.Println(utils.ToJson(result))
+}
 
-	api.Setting.SetSiteNo("th")
+func (p *LazadaTest) GetSeller() {
 
-	c := api.GetSeller(nil)
+	p.api.Setting.SetSiteNo("th")
+
+	c := p.api.GetSeller(nil)
 	if c.Err != nil {
 		panic(c.Err)
 	}
@@ -44,11 +59,11 @@ func GetSeller(api *lazada.Api) {
 	fmt.Println(result)
 }
 
-func GetOrderDetail(api *lazada.Api) {
+func (p *LazadaTest) GetOrderDetail() {
 
-	api.Setting.SetSiteNo("th")
+	p.api.Setting.SetSiteNo("th")
 
-	c := api.GetOrder(model.BodyMap{"order_id": "690646034119032"})
+	c := p.api.GetOrder(model.BodyMap{"order_id": "690646034119032"})
 	if c.Err != nil {
 		panic(c.Err)
 	}

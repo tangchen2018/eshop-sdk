@@ -85,6 +85,23 @@ func (p *Api) RefreshToken(Body model.BodyMap) *model.Client {
 	return &c.Client
 }
 
+func (p *Api) StoreRefreshToken(Body model.BodyMap) *model.Client {
+
+	c := p.RefreshToken(Body)
+
+	if c.Response.Response.DataTo != nil {
+		response := c.Response.Response.DataTo.(GetTokenResponse)
+		c.Response.Response.DataTo = model.StoreTokenResponse{
+			AccessToken:        response.AccessToken,
+			AccessTokenExpire:  response.AccessTokenExpireIn,
+			RefreshToken:       response.RefreshToken,
+			RefreshTokenExpire: response.RefreshTokenExpireIn,
+		}
+	}
+
+	return c
+}
+
 /*
 	获取订单列表
 	Url : https://partner.tiktokshop.com/doc/page/262815?external_id=262815

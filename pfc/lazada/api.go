@@ -1,8 +1,11 @@
 package lazada
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/tangchen2018/eshop-sdk/model"
+	"github.com/tangchen2018/eshop-sdk/utils"
+	"github.com/tangchen2018/go-utils/http"
 )
 
 type Api struct {
@@ -43,12 +46,54 @@ func (p *Api) GetToken(Body model.BodyMap) *model.Client {
 		return &c.Client
 	}
 	c.Client.Response.Response.Data = c.HttpReq.Result
-	response := Response{}
-	if c.Err = c.Client.Response.To(&response); c.Err != nil {
+	response := GetTokenResponse{}
+	if c.Err = json.Unmarshal(c.HttpReq.Result, &response); c.Err != nil {
 		return &c.Client
 	}
 	c.Response.Response.DataTo = response
 	return &c.Client
+}
+
+func (p *Api) RefreshToken(Body model.BodyMap) *model.Client {
+
+	c := NewClient(p.Setting)
+	c.SetPath(RefreshURL).
+		SetMethod(http.POST).
+		SetBody(Body)
+
+	if c.Err = Body.CheckEmptyError("refresh_token"); c.Err != nil {
+		return &c.Client
+	}
+
+	c.Execute()
+	if c.Err != nil {
+		return &c.Client
+	}
+	response := GetTokenResponse{}
+	if c.Err = json.Unmarshal(c.HttpReq.Result, &response); c.Err != nil {
+		return &c.Client
+	}
+	c.Response.Response.DataTo = response
+	return &c.Client
+}
+
+func (p *Api) StoreRefreshToken(Body model.BodyMap) *model.Client {
+
+	currTime := utils.TimestampSecond()
+
+	c := p.RefreshToken(Body)
+
+	if c.Response.Response.DataTo != nil {
+		response := c.Response.Response.DataTo.(GetTokenResponse)
+		c.Response.Response.DataTo = model.StoreTokenResponse{
+			AccessToken:        response.AccessToken,
+			AccessTokenExpire:  response.ExpiresIn + currTime,
+			RefreshToken:       response.RefreshToken,
+			RefreshTokenExpire: response.RefreshExpiresIn + currTime,
+		}
+	}
+
+	return c
 }
 
 func (p *Api) GetSeller(Body model.BodyMap) *model.Client {
