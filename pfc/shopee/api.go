@@ -107,10 +107,16 @@ func (p *Api) GetMerchant(Body model.BodyMap) *model.Client {
 func (p *Api) RefreshToken(Body model.BodyMap) *model.Client {
 
 	partnerId, _ := strconv.ParseInt(*p.Setting.Key, 10, 64)
-	shopId, _ := strconv.ParseInt(*p.Setting.ShopId, 10, 64)
 
-	Body.Set("partner_id", partnerId).
-		Set("shop_id", shopId)
+	if p.Setting.IsMerchant {
+		merchantId, _ := strconv.ParseInt(*p.Setting.MerchantId, 10, 64)
+		Body.Set("partner_id", partnerId).
+			Set("merchant_id", merchantId)
+	} else {
+		shopId, _ := strconv.ParseInt(*p.Setting.ShopId, 10, 64)
+		Body.Set("partner_id", partnerId).
+			Set("shop_id", shopId)
+	}
 
 	c := NewClient(p.Setting)
 	c.SetPath(AUTH_REFRESHTOKEN).

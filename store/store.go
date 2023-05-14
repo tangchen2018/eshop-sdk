@@ -133,15 +133,18 @@ func (p *Store) Listen() {
 					t1.Refresh.AccessTokenExpire, t1.SecondsBeforeRefresh)
 
 				if t1.Refresh.AccessTokenExpire-t1.SecondsBeforeRefresh <= utils.TimestampSecond() {
+					go func(t1 *Token) {
+						p.DelJob(t1)
 
-					e := &Event{Token: t1}
-					p.RefreshRun(e)
+						e := &Event{Token: t1}
+						p.RefreshRun(e)
 
-					if e.Success {
-						p.RestartJob(t1)
-					} else {
-						p.ErrJob(t1)
-					}
+						if e.Success {
+							p.RestartJob(t1)
+						} else {
+							p.ErrJob(t1)
+						}
+					}(t1)
 				}
 			}
 			time.Sleep(time.Duration(p.LoopWait) * time.Second)
@@ -169,7 +172,11 @@ func (p *Store) RefreshRun(e *Event) {
 
 	c := api.New(e.Token.Refresh.PlatformCode, new(model.Setting).
 		SetKey(e.Token.Refresh.Key).
-		SetSecret(e.Token.Refresh.Secret)).StoreRefreshToken(model.BodyMap{"refresh_token": e.Token.Refresh.RefreshToken})
+		SetMerchantId(e.Token.Refresh.MerchantId).
+		SetShopId(e.Token.Refresh.ShopId).
+		SetIsMerchant(e.Token.Refresh.IsMerchant).
+		SetSecret(e.Token.Refresh.Secret)).StoreRefreshToken(model.BodyMap{
+		"refresh_token": e.Token.Refresh.RefreshToken})
 
 	if c == nil {
 		e.Msg = fmt.Sprintf("平台[%s]不支持", e.Token.Refresh.PlatformCode)

@@ -29,8 +29,10 @@ type Refresh struct {
 	PlatformCode      string `json:"platformCode"`      // 平台
 	RefreshToken      string `json:"refreshToken"`      // 刷新令牌
 	AccessTokenExpire int64  `json:"accessTokenExpire"` // 访问令牌有效期(时间戳)
-
+	IsMerchant        bool   `json:"isMerchant"`        // 是否商户
 	//下面2个参数只有返回的时候有 传入可以不传
+	MerchantId         string `json:"merchantId"`
+	ShopId             string `json:"shopId"`
 	AccessToken        string `json:"accessToken"`        //刷新令牌
 	RefreshTokenExpire int64  `json:"refreshTokenExpire"` // 刷新令牌有效期(时间戳)
 }
