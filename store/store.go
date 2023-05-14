@@ -50,6 +50,10 @@ func (p *Store) DelJob(token *Token) {
 	p.JobChan <- &Job{Method: "del", Token: token}
 }
 
+func (p *Store) ErrJob(token *Token) {
+	p.JobChan <- &Job{Method: "err", Token: token}
+}
+
 func (p *Store) ListenJob() {
 
 	for job := range p.JobChan {
@@ -64,7 +68,6 @@ func (p *Store) ListenJob() {
 
 		switch job.Method {
 		case "add":
-
 			if index > -1 {
 				p.List[index] = job.Token
 			} else {
@@ -72,10 +75,27 @@ func (p *Store) ListenJob() {
 			}
 			p.List.Sort()
 		case "del":
-
 			if index > -1 && index < len(p.List) {
 				p.List = append(p.List[:index], p.List[index+1:]...)
 			}
+		case "err":
+			if index > -1 && index < len(p.List) {
+				p.List = append(p.List[:index], p.List[index+1:]...)
+			}
+
+			index = -1
+			for i, j := range p.ErrorList {
+				if j.Id == job.Token.Id {
+					index = i
+					break
+				}
+			}
+			if index > -1 {
+				p.ErrorList[index] = job.Token
+			} else {
+				p.ErrorList = append(p.ErrorList, job.Token)
+			}
+			p.ErrorList.Sort()
 		}
 	}
 }
@@ -84,6 +104,21 @@ func (p *Store) Listen() {
 
 	go func() {
 		p.ListenJob()
+	}()
+
+	go func() {
+		for {
+			if len(p.ErrorList) > 0 {
+				log.Printf("Error Len[%d]", len(p.ErrorList))
+
+				for _, item := range p.ErrorList {
+					log.Printf("Error %s: Id [%s]",
+						item.Refresh.PlatformCode, item.Id)
+				}
+			}
+
+			time.Sleep(time.Duration(p.LoopWait) * time.Second)
+		}
 	}()
 
 	go func() {
@@ -98,8 +133,15 @@ func (p *Store) Listen() {
 					t1.Refresh.AccessTokenExpire, t1.SecondsBeforeRefresh)
 
 				if t1.Refresh.AccessTokenExpire-t1.SecondsBeforeRefresh <= utils.TimestampSecond() {
-					p.RefreshRun(&Event{Token: t1})
-					p.RestartJob(t1)
+
+					e := &Event{Token: t1}
+					p.RefreshRun(e)
+
+					if e.Success {
+						p.RestartJob(t1)
+					} else {
+						p.ErrJob(t1)
+					}
 				}
 			}
 			time.Sleep(time.Duration(p.LoopWait) * time.Second)
@@ -108,8 +150,8 @@ func (p *Store) Listen() {
 }
 
 func (p *Store) RefreshRun(e *Event) {
-	defer func() {
 
+	defer func() {
 		if r := recover(); r != nil {
 			const size = 64 << 10
 			buf := make([]byte, size)

@@ -51,11 +51,12 @@ type Event struct {
 }
 
 type Store struct {
-	Map      map[string]*Token
-	List     Tokens
-	JobChan  chan *Job
-	LoopWait int64 // 秒
-	TimeOut  int64 // 超时时间 默认30s
+	Map       map[string]*Token
+	List      Tokens
+	ErrorList Tokens
+	JobChan   chan *Job
+	LoopWait  int64 // 秒
+	TimeOut   int64 // 超时时间 默认30s
 }
 
 type Job struct {
