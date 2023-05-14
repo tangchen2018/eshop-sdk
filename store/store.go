@@ -139,17 +139,16 @@ func (p *Store) RefreshRun(e *Event) {
 	}
 	if !c.Response.Success {
 		e.Msg = c.Response.Response.Message
-		return
+	} else {
+		resp := c.Response.Response.DataTo.(model.StoreTokenResponse)
+		e.Token.Refresh.AccessToken = resp.AccessToken
+		e.Token.Refresh.AccessTokenExpire = resp.AccessTokenExpire
+		e.Token.Refresh.RefreshToken = resp.RefreshToken
+		e.Token.Refresh.RefreshTokenExpire = resp.RefreshTokenExpire
+
+		e.Success = true
+		e.Msg = "success"
 	}
-
-	resp := c.Response.Response.DataTo.(model.StoreTokenResponse)
-	e.Token.Refresh.AccessToken = resp.AccessToken
-	e.Token.Refresh.AccessTokenExpire = resp.AccessTokenExpire
-	e.Token.Refresh.RefreshToken = resp.RefreshToken
-	e.Token.Refresh.RefreshTokenExpire = resp.RefreshTokenExpire
-
-	e.Success = true
-	e.Msg = "success"
 
 	go func(e *Event) {
 		ch := make(chan string)
