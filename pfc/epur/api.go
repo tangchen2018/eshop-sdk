@@ -12,7 +12,7 @@ type Api struct {
 
 func New(setting *model.Setting) *Api {
 	api := &Api{Setting: setting}
-	if api.Setting.ServerUrl == nil {
+	if api.Setting.ServerUrl == nil || len(*api.Setting.ServerUrl) <= 0 {
 		api.Setting.SetServerUrl("http://dev.open.epur.cn")
 	}
 	return api

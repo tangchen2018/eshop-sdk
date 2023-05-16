@@ -30,6 +30,7 @@ type Refresh struct {
 	RefreshToken      string `json:"refreshToken"`      // 刷新令牌
 	AccessTokenExpire int64  `json:"accessTokenExpire"` // 访问令牌有效期(时间戳)
 	IsMerchant        bool   `json:"isMerchant"`        // 是否商户
+	ServerUrl         string `json:"serverUrl"`
 	//下面2个参数只有返回的时候有 传入可以不传
 	MerchantId         string `json:"merchantId"`
 	ShopId             string `json:"shopId"`

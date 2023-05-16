@@ -175,6 +175,7 @@ func (p *Store) RefreshRun(e *Event) {
 		SetMerchantId(e.Token.Refresh.MerchantId).
 		SetShopId(e.Token.Refresh.ShopId).
 		SetIsMerchant(e.Token.Refresh.IsMerchant).
+		SetServerUrl(e.Token.Refresh.ServerUrl).
 		SetSecret(e.Token.Refresh.Secret)).StoreRefreshToken(model.BodyMap{
 		"refresh_token": e.Token.Refresh.RefreshToken})
 
