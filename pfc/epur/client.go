@@ -10,6 +10,7 @@ import (
 	"github.com/tangchen2018/eshop-sdk/model"
 	"github.com/tangchen2018/eshop-sdk/utils"
 	"github.com/tangchen2018/go-utils/http"
+	"log"
 	http2 "net/http"
 	"sort"
 	"strconv"
@@ -36,7 +37,7 @@ func (p *Client) Execute() {
 	)
 	payload := p.requestPayload(p.Request.Body)
 
-	p.HttpReq.Header.Set("host", *p.Setting.ServerUrl)
+	p.HttpReq.Header.Set("host", strings.Replace(strings.Replace(*p.Setting.ServerUrl, "https://", "", -1), "http://", "", -1))
 	p.HttpReq.Header.Set("user-agent", "AccOpenApiClient/1.0.2 (+https://www.epur.cn/)")
 	p.HttpReq.Header.Set("x-acc-version", "1.0.2")
 	p.HttpReq.Header.Set("x-acc-action", *p.Request.Path)
@@ -49,8 +50,16 @@ func (p *Client) Execute() {
 	if p.Setting.AccessToken != nil {
 		p.HttpReq.Header.Set("x-acc-access-token", *p.Setting.AccessToken)
 	}
+
+	for key, item := range p.HttpReq.Header {
+		fmt.Println(key, item)
+	}
+	log.Printf("%s", payload)
+
 	p.HttpReq.Header.Set("s-authorization", p.sign(p.HttpReq.Header, payload))
 	p.HttpReq.Body = p.Request.Body
+
+	fmt.Println("s-authorization->", p.HttpReq.Header.Get("s-authorization"))
 
 	if p.Err = p.Client.Execute(); p.Err != nil {
 		return
@@ -115,6 +124,9 @@ func (p *Client) sign(headers http2.Header, payload string) string {
 	sb.WriteString(signedHeaders)
 	sb.WriteString("\n")
 	sb.WriteString(payload)
+
+	fmt.Println(*p.Setting.Secret)
+
 	hex := p.hexEncode(p.hash(sb.String()))
 	stringToSign := "ACS3-HMAC-SHA256\n" + hex
 	signature := p.hexEncode(p.signatureHSHA256(stringToSign, *p.Setting.Secret))

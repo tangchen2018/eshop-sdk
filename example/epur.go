@@ -15,7 +15,7 @@ func main() {
 	api := epur.New(
 		new(model.Setting).
 			SetKey("appxxxxxxxxxxxxxxxx").
-			SetSecret("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx").
+			SetSecret("secret_xxxxxxxxxxxxx").
 			SetServerUrl("http://dev.open.epur.cn").
 			SetShopId("appxxxxxxxxxxxxx__&&@@%%__110").
 			SetAuthCallbackUrl("https://www.baidu.com").
