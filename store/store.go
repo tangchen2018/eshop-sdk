@@ -13,7 +13,7 @@ import (
 )
 
 func New() *Store {
-	return &Store{JobChan: make(chan *Job, 2048), LoopWait: 60, TimeOut: 30}
+	return &Store{JobChan: make(chan *Job, 2048), LoopWait: 60 * 5, TimeOut: 30}
 }
 
 func (p *Store) AddJob(token *Token) error {
@@ -145,6 +145,7 @@ func (p *Store) Listen() {
 							p.ErrJob(t1)
 						}
 					}(t1)
+					continue
 				}
 			}
 			time.Sleep(time.Duration(p.LoopWait) * time.Second)
