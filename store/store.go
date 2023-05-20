@@ -47,10 +47,11 @@ func (p *Store) RestartJob(token *Token) {
 }
 
 func (p *Store) DelJob(token *Token) {
-	p.JobChan <- &Job{Method: "del", Token: token}
+	p.ActionDel(token)
 }
 
 func (p *Store) ErrJob(token *Token) {
+	//p.ActionDel(token)
 	p.JobChan <- &Job{Method: "err", Token: token}
 }
 
@@ -58,32 +59,26 @@ func (p *Store) ListenJob() {
 
 	for job := range p.JobChan {
 
-		index := -1
-		for i, j := range p.List {
-			if j.Id == job.Token.Id {
-				index = i
-				break
-			}
-		}
-
 		switch job.Method {
 		case "add":
+
+			index := -1
+			for i, j := range p.List {
+				if j.Id == job.Token.Id {
+					index = i
+					break
+				}
+			}
+
 			if index > -1 {
 				p.List[index] = job.Token
 			} else {
 				p.List = append(p.List, job.Token)
 			}
 			p.List.Sort()
-		case "del":
-			if index > -1 && index < len(p.List) {
-				p.List = append(p.List[:index], p.List[index+1:]...)
-			}
 		case "err":
-			if index > -1 && index < len(p.List) {
-				p.List = append(p.List[:index], p.List[index+1:]...)
-			}
 
-			index = -1
+			index := -1
 			for i, j := range p.ErrorList {
 				if j.Id == job.Token.Id {
 					index = i
@@ -97,6 +92,19 @@ func (p *Store) ListenJob() {
 			}
 			p.ErrorList.Sort()
 		}
+	}
+}
+
+func (p *Store) ActionDel(token *Token) {
+	index := -1
+	for i, j := range p.List {
+		if j.Id == token.Id {
+			index = i
+			break
+		}
+	}
+	if index > -1 && index < len(p.List) {
+		p.List = append(p.List[:index], p.List[index+1:]...)
 	}
 }
 
@@ -123,6 +131,7 @@ func (p *Store) Listen() {
 
 	go func() {
 		for {
+
 			if len(p.List) > 0 {
 				t1 := p.List[0]
 
@@ -133,9 +142,9 @@ func (p *Store) Listen() {
 					t1.Refresh.AccessTokenExpire, t1.SecondsBeforeRefresh)
 
 				if t1.Refresh.AccessTokenExpire-t1.SecondsBeforeRefresh <= utils.TimestampSecond() {
-					go func(t1 *Token) {
-						p.DelJob(t1)
+					p.DelJob(t1)
 
+					go func(t1 *Token) {
 						e := &Event{Token: t1}
 						p.RefreshRun(e)
 
@@ -145,9 +154,11 @@ func (p *Store) Listen() {
 							p.ErrJob(t1)
 						}
 					}(t1)
+
 					continue
 				}
 			}
+
 			time.Sleep(time.Duration(p.LoopWait) * time.Second)
 		}
 	}()
