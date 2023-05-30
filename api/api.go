@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/tangchen2018/eshop-sdk/model"
 	"github.com/tangchen2018/eshop-sdk/pfc/epur"
+	"github.com/tangchen2018/eshop-sdk/pfc/go1688"
 	"github.com/tangchen2018/eshop-sdk/pfc/lazada"
 	"github.com/tangchen2018/eshop-sdk/pfc/shopee"
 	"github.com/tangchen2018/eshop-sdk/pfc/tiktok"
@@ -32,6 +33,8 @@ func New(pfc string, setting *model.Setting) *Api {
 		api.api = lazada.New(setting)
 	case model.PFC_SHOPEE:
 		api.api = shopee.New(setting)
+	case model.PFC_1688:
+		api.api = go1688.New(setting)
 	default:
 		panic(errors.New("平台不支持!"))
 	}

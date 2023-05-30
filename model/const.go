@@ -5,4 +5,5 @@ const (
 	PFC_LAZADA = "Lazada"
 	PFC_SHOPEE = "Shopee"
 	PFC_EPUR   = "Epur"
+	PFC_1688   = "1688"
 )
